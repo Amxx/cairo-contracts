@@ -6,7 +6,6 @@ use starknet::contract_address_const;
 use starknet::ContractAddress;
 use starknet::testing::set_caller_address;
 use integer::u256;
-use integer::u256_from_felt252;
 use traits::Into;
 use zeroable::Zeroable;
 
@@ -71,23 +70,23 @@ fn test_initialize() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid account', ))]
+#[should_panic(expected: ('ERC721: invalid account', ))]
 fn test_balance_of_zero() {
     ERC721::balance_of(ZERO());
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test_owner_of_non_minted() {
-    ERC721::owner_of(u256_from_felt252(7));
+    ERC721::owner_of(7.into());
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test_get_approved_nonexistent() {
-    ERC721::get_approved(u256_from_felt252(7));
+    ERC721::get_approved(7.into());
 }
 
 #[test]
@@ -136,7 +135,7 @@ fn test_approve_from_operator() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: unauthorized caller', ))]
+#[should_panic(expected: ('ERC721: unauthorized caller', ))]
 fn test_approve_from_unauthorized() {
     setup();
 
@@ -146,7 +145,7 @@ fn test_approve_from_unauthorized() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: approval to owner', ))]
+#[should_panic(expected: ('ERC721: approval to owner', ))]
 fn test_approve_to_owner() {
     setup();
 
@@ -156,7 +155,7 @@ fn test_approve_to_owner() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test_approve_nonexistent() {
     ERC721::approve(SPENDER(), TOKEN_ID());
 }
@@ -172,7 +171,7 @@ fn test__approve() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: approval to owner', ))]
+#[should_panic(expected: ('ERC721: approval to owner', ))]
 fn test__approve_to_owner() {
     setup();
 
@@ -181,7 +180,7 @@ fn test__approve_to_owner() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test__approve_nonexistent() {
     ERC721::_approve(SPENDER(), TOKEN_ID());
 }
@@ -205,7 +204,7 @@ fn test_set_approval_for_all() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: self approval', ))]
+#[should_panic(expected: ('ERC721: self approval', ))]
 fn test_set_approval_for_all_owner_equal_operator_true() {
     set_caller_address(OWNER());
     ERC721::set_approval_for_all(OWNER(), true);
@@ -213,7 +212,7 @@ fn test_set_approval_for_all_owner_equal_operator_true() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: self approval', ))]
+#[should_panic(expected: ('ERC721: self approval', ))]
 fn test_set_approval_for_all_owner_equal_operator_false() {
     set_caller_address(OWNER());
     ERC721::set_approval_for_all(OWNER(), false);
@@ -233,14 +232,14 @@ fn test__set_approval_for() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: self approval', ))]
+#[should_panic(expected: ('ERC721: self approval', ))]
 fn test__set_approval_for_all_owner_equal_operator_true() {
     ERC721::_set_approval_for_all(OWNER(), OWNER(), true);
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: self approval', ))]
+#[should_panic(expected: ('ERC721: self approval', ))]
 fn test__set_approval_for_all_owner_equal_operator_false() {
     ERC721::_set_approval_for_all(OWNER(), OWNER(), false);
 }
@@ -273,14 +272,14 @@ fn test_transfer_from_owner() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test_transfer_from_nonexistent() {
     ERC721::transfer_from(ZERO(), RECIPIENT(), TOKEN_ID());
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid receiver', ))]
+#[should_panic(expected: ('ERC721: invalid receiver', ))]
 fn test_transfer_from_to_zero() {
     setup();
 
@@ -347,7 +346,7 @@ fn test_transfer_from_approved_for_all() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: unauthorized caller', ))]
+#[should_panic(expected: ('ERC721: unauthorized caller', ))]
 fn test_transfer_from_unauthorized() {
     setup();
 
@@ -374,14 +373,14 @@ fn test__transfer() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test__transfer_nonexistent() {
     ERC721::_transfer(ZERO(), RECIPIENT(), TOKEN_ID());
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid receiver', ))]
+#[should_panic(expected: ('ERC721: invalid receiver', ))]
 fn test__transfer_to_zero() {
     setup();
 
@@ -390,7 +389,7 @@ fn test__transfer_to_zero() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: wrong sender', ))]
+#[should_panic(expected: ('ERC721: wrong sender', ))]
 fn test__transfer_from_invalid_owner() {
     setup();
 
@@ -415,14 +414,14 @@ fn test__mint() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid receiver', ))]
+#[should_panic(expected: ('ERC721: invalid receiver', ))]
 fn test__mint_to_zero() {
     ERC721::_mint(ZERO(), TOKEN_ID());
 }
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: token already minted', ))]
+#[should_panic(expected: ('ERC721: token already minted', ))]
 fn test__mint_already_exist() {
     setup();
 
@@ -453,7 +452,7 @@ fn test__burn() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test__burn_nonexistent() {
     ERC721::_burn(TOKEN_ID());
 }
@@ -474,7 +473,7 @@ fn test__set_token_uri() {
 
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected = ('ERC721: invalid token ID', ))]
+#[should_panic(expected: ('ERC721: invalid token ID', ))]
 fn test__set_token_uri_nonexistent() {
     ERC721::_set_token_uri(TOKEN_ID(), URI);
 }
