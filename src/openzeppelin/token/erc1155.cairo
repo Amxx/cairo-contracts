@@ -100,11 +100,26 @@ mod ERC1155 {
     impl ERC1155 of erc1155::IERC1155 {
         // IERC1155
         fn balance_of(account: ContractAddress, id: u256) -> u256 {
+            assert(!account.is_zero(), 'ERC1155: invalid account');
             _balances::read((id, account))
         }
 
-        fn balance_of_batch(accounts: Array<ContractAddress>, ids: Array<u256>) -> Array<u256> {
-            _balance_of_batch_iter(accounts, ids, ArrayTrait::new())
+        fn balance_of_batch(mut accounts: Array<ContractAddress>, mut ids: Array<u256>) -> Array<u256> {
+            let mut balances: Array<u256> = ArrayTrait::new();
+            loop {
+                let account = accounts.pop_front();
+                let id = ids.pop_front();
+                if (account.is_some() & id.is_some()) {
+                    balances.append(ERC1155::balance_of(
+                        account.unwrap(),
+                        id.unwrap()
+                    ));
+                } else if (account.is_none() & id.is_none()) {
+                    break balances;
+                } else {
+                    panic_with_felt252('ERC1155 invalid array length');
+                };
+            }
         }
 
         fn is_approved_for_all(account: ContractAddress, operator: ContractAddress) -> bool {
@@ -112,7 +127,7 @@ mod ERC1155 {
         }
 
         fn set_approval_for_all(operator: ContractAddress, approved: bool) {
-            _set_approval_for_all(get_caller_address(), operator, approved)
+            _set_approval_for_all(get_caller_address(), operator, approved);
         }
 
         fn safe_transfer_from(
@@ -149,7 +164,7 @@ mod ERC1155 {
 
     #[view]
     fn supports_interface(interface_id: u32) -> bool {
-        erc165::ERC165Contract::supports_interface(interface_id)
+        erc165::ERC165::supports_interface(interface_id)
     }
 
     #[view]
@@ -198,8 +213,8 @@ mod ERC1155 {
     #[internal]
     fn initializer(uri: felt252) {
         _set_uri(uri);
-        erc165::ERC165Contract::register_interface(erc1155::IERC1155_ID);
-        erc165::ERC165Contract::register_interface(erc1155::IERC1155_METADATA_ID);
+        erc165::ERC165::register_interface(erc1155::IERC1155_ID);
+        erc165::ERC165::register_interface(erc1155::IERC1155_METADATA_ID);
     }
 
     #[internal]
@@ -214,6 +229,7 @@ mod ERC1155 {
         from: ContractAddress, to: ContractAddress, id: u256, amount: u256, data: Array<felt252>
     ) {
         let operator: ContractAddress = get_caller_address();
+        assert(!from.is_zero(), 'ERC1155: invalid sender');
         assert(!to.is_zero(), 'ERC1155: invalid receiver');
 
         _balances::write((id, from), _balances::read((id, from)) - amount);
@@ -230,35 +246,61 @@ mod ERC1155 {
         ids: Array<u256>,
         amounts: Array<u256>,
         data: Array<felt252>
-    ) {}
+    ) {
+        panic_with_felt252('Not implemented yet');
+    }
+
+    #[internal]
+    fn _mint(
+        to: ContractAddress,
+        id: u256,
+        amount: u256,
+        data: Array<felt252>
+    ) {
+        let operator: ContractAddress = get_caller_address();
+        assert(!to.is_zero(), 'ERC1155: invalid receiver');
+
+        _balances::write((id, to), _balances::read((id, to)) + amount);
+        TransferSingle(operator, Zeroable::zero(), to, id, amount);
+
+        _do_safe_transfer_acceptance_check(operator, Zeroable::zero(), to, id, amount, data);
+    }
+
+    #[internal]
+    fn _mint_batch(
+        to: ContractAddress,
+        ids: Array<u256>,
+        amounts: Array<u256>,
+        data: Array<felt252>
+    ) {
+        panic_with_felt252('Not implemented yet');
+    }
+
+    #[internal]
+    fn _burn(
+        from: ContractAddress,
+        id: u256,
+        amount: u256
+    ) {
+        let operator: ContractAddress = get_caller_address();
+        assert(!from.is_zero(), 'ERC1155: invalid sender');
+
+        _balances::write((id, from), _balances::read((id, from)) - amount);
+        TransferSingle(operator, from, Zeroable::zero(), id, amount);
+    }
+
+    #[internal]
+    fn _burn_batch(
+        from: ContractAddress,
+        ids: Array<u256>,
+        amounts: Array<u256>
+    ) {
+        panic_with_felt252('Not implemented yet');
+    }
 
     #[internal]
     fn _set_uri(uri: felt252) {
         _uri::write(uri)
-    }
-
-    #[private]
-    fn _asSingletonArray(value: u256) -> Array<u256> {
-        let mut array = ArrayTrait::new();
-        array.append(value);
-        array
-    }
-
-    #[private]
-    fn _balance_of_batch_iter(
-        mut accounts: Array<ContractAddress>, mut ids: Array<u256>, mut res: Array<u256>
-    ) -> Array<u256> {
-        match accounts.pop_front() {
-            Option::Some(account) => {
-                let id = ids.pop_front().expect('ERC1155 invalid array length');
-                res.append(ERC1155::balance_of(account, id));
-                _balance_of_batch_iter(accounts, ids, res)
-            },
-            Option::None(_) => {
-                assert(ids.is_empty(), 'ERC1155 invalid array length');
-                res
-            }
-        }
     }
 
     #[private]
